@@ -1,0 +1,24 @@
+{
+  "inputVariables": [
+    {"variableType": "real", "key": "cyclo"},
+    {"variableType": "real", "key": "lines_of_code"},
+    {"variableType": "real", "key": "return_values"},
+    {"variableType": "real", "key": "block_nesting"},
+    {"variableType": "real", "key": "arity"},
+    {"variableType": "real", "key": "abc_size"},
+    {"variableType": "real", "key": "pmd_atfd"},
+    {"variableType": "real", "key": "pmd_cyclo"},
+    {"variableType": "real", "key": "pmd_loc"},
+    {"variableType": "real", "key": "pmd_ncss"},
+    {"variableType": "real", "key": "pmd_nlv"},
+    {"variableType": "real", "key": "pmd_nop"},
+    {"variableType": "real", "key": "pmd_nos"},
+    {"variableType": "real", "key": "pmd_npath"}
+  ],
+  "outputVariables": [
+    {
+      "variableType": "categorical",
+      "key": "severity"
+    }
+  ]
+}
