@@ -16,22 +16,20 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
 
-library(randomForest)
-
 makeCQLearner <- function() {
     return(myMakeLearner("classif.earth"))
 }
 
 buildTunedModel <- function(learner, resampling, measures) {
     paramSpace <- makeParamSet(
-    makeIntegerParam("maxit",lower = 40, upper = 40),
-    makeDiscreteParam("newvar.penalty", values = c(0,0.01,0.03,0.05,0.08,0.1)),
-    makeDiscreteParam("fast.k", values = c(0,4,8,20,40,100)),
-    makeDiscreteParam("fast.beta", values = c(0,1)),
-    makeDiscreteParam("penalty", values = c(2,3,4)),
+    makeIntegerParam("maxit", lower=40, upper=40),
+    makeDiscreteParam("newvar.penalty", values=c(0,0.01,0.03,0.05,0.08,0.1)),
+    makeDiscreteParam("fast.k", values=c(0,4,8,20,40,100)),
+    makeDiscreteParam("fast.beta", values=c(0,1)),
+    makeDiscreteParam("penalty", values=c(2,3,4))
     )
 
-    searchStrategy <- makeTuneControlRandom(maxit=500L)
+    searchStrategy <- makeTuneControlRandom(maxit=40L)
 
     tunedParams <-
     tuneParams(learner, task = taskPerSmell,

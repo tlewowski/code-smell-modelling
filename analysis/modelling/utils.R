@@ -129,7 +129,7 @@ cleanDataByConvertingToCorrectTypes <- function(data) {
       ),
       .funs = as.integer
     ) %>%
-    dplyr::mutate_at(.vars = c(#"reviewer_id", # removed - requested by @tomek et al.
+    mutate_at(.vars = c(#"reviewer_id", # removed - requested by @tomek et al.
       "severity",
       "type",
       "smell"),
@@ -137,9 +137,30 @@ cleanDataByConvertingToCorrectTypes <- function(data) {
   return(result)
 }
 
+cleanDataByThresholdingSeverity <- function(data, threshold) {
+  return (data %>% mutate_at(.vars = c("severity"), .funs = function(s) { return (s %in% threshold) }))
+}
 
 #-- Function: cleanDataByRemovingIrrelevantData -------------------------------
 cleanDataByRemovingIrrelevantData <- function(data, smell) {
+  data <- select(
+    data,-c(
+      id,
+      sample_id,
+      reviewer_id, #might be reconsidered!
+      sample_id..14,
+      review_timestamp,
+      type, #might be reconsidered in case of multioutput predictions
+      name,
+      analysis_timestamp,
+      name..10,
+      language,
+      repository,
+      commit_hash
+    )
+  )
+
+  print(smell)
   switch(
     smell,
     "blob" = {
@@ -283,7 +304,6 @@ myMakeLearner <- function(learnerName){
   } else{
     
     learner <- learner %>% mlr::makeDummyFeaturesWrapper()
-    learner <- learner %>% mlr::makeDummyFeaturesWrapper()
   }
   return(learner)
 }
@@ -329,7 +349,7 @@ measuremulticlass.AvFbetaCalc <- function(confMatrix, levels) {
 
 
 makeStats <- function(model) {
-  matrix <- calculateConfusionMatrix(model)
+  matrix <- calculateConfusionMatrix(model, relative = FALSE, sums = FALSE))
 
   if(is.null(matrix)) {
     return(list(
@@ -338,19 +358,33 @@ makeStats <- function(model) {
   }
 
   performanceMetrics <- performance(model, measures=list(
-  acc,
-  bac,
-  ber,
-  mmce,
-  kappa,
-  wkappa,
-  multiclass.AvFbeta
+    acc,
+    bac,
+    ber,
+    mmce,
+    kappa,
+    wkappa,
+    f1,
+    fnr,
+    fpr,
+    tpr,
+    tnr,
+    ppv,
+    npv,
+    mcc,
+    gpr,
+    fdr,
+    fp,
+    tp,
+    fn,
+    tn,
+    multiclass.AvFbeta
   ))
 
   obj <- list(
   confusionMatrix = matrix,
   metrics = performanceMetrics,
-  evaluation = "10CV"
+  evaluation = "3CV"
   )
 
   return(obj)
@@ -401,6 +435,7 @@ myMakeLearnerNAI <- function(learnerName, id){
 }
 
 cv2stratify <- mlr::makeResampleDesc("CV", iters = 2L, stratify = TRUE)
+cv3stratify <- mlr::makeResampleDesc("CV", iters = 3L, stratify = TRUE)
 cv5stratify <- mlr::makeResampleDesc("CV", iters = 5L, stratify = TRUE)
 cv10stratify <- mlr::makeResampleDesc("CV", iters = 10L, stratify = TRUE)
 rep2cv10stratify <- mlr::makeResampleDesc("RepCV", folds = 10L, reps = 2L, stratify = TRUE)
