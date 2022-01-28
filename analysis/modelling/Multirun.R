@@ -44,7 +44,7 @@ smells = list(
   list(schema="/media/CodeSmells_2022/analysis/modelling/schemas/schema-functions-v2.json", name="feature envy", id="featureenvy")#, 
   #list(schema="/media/CodeSmells_2022/analysis/modelling/schemas/schema-classes-v2.json", name="blob", id="blob"),  
   #list(schema="/media/CodeSmells_2022/analysis/modelling/schemas/schema-classes-v2.json", name="data class", id="dataclass")
-)
+)=
 
 
 commonPath <- "/media/CodeSmells_2022/analysis/modelling/R/algorithms"
@@ -62,7 +62,6 @@ models <- list(
     ##list(path="statistical/NaiveBayes.R", name="NaiveBayes")
     #list(path="statistical/GaussianProcesses.R", name="gaussian_processes")
 )
-initialData <- read.csv(file=dataSource)
 
 thresholds <- list(
   #c("minor", "major", "critical"),
