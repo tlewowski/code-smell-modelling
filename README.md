@@ -20,6 +20,9 @@ The expected invocation is:
 Rscript Multirun.R
 ```
 
+The script should be executed from `analysis/modelling` directory, as it uses relative paths in several locations throughout the code.
+Relative paths are the only reason for that, modifying them will let you run the scripts from any location.
+
 Before running it, make sure that you have all required libraries installed.
 You can install them again by running `Rscript libraries.R`
 
@@ -55,6 +58,9 @@ The expected invocation is:
 ```R
 Rscript tables_and_boxplots.R
 ```
+
+The script should be executed from `analysis/diagrams` directory, as it uses relative paths in several locations throughout the code.
+Relative paths are the only reason for that, modifying them will let you run the scripts from any location.
 
 All required dependencies are listed in the script, but you need to install them manually,
 as no automated script (similar to `libraries.R` or `Packrat.lock`) is provided for this module.

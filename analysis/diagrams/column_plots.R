@@ -52,8 +52,8 @@ drawPictures <- function(results, title, plot_path, smell) {
     ggsave(plot_path)
 }
 
-resultsRoot <- "/media/CodeSmells_2022/models/2022-01-07"
-targetRoot <- "/media/CodeSmells_2022/images/2022-01-07"
+resultsRoot <- "../../models/2022-01-07"
+targetRoot <- "../../images/2022-01-07"
 smellsToAnalyze <- c(
     "blob" = "Blob", 
     "dataclass" = "Data Class", 

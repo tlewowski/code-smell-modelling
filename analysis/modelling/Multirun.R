@@ -34,20 +34,20 @@ print(paste("Running for", smellPattern))
 
 iterations <- 20
 argv <- list(beta=0.8)
-source("/media/CodeSmells_2022/analysis/modelling/R/utils.R")
+source("./utils.R")
 
-dataSource <- "/media/CodeSmells_2022/all-with-metrics.csv"
+dataSource <- "../../data/all-with-metrics.csv"
 
 initialData <- read.csv(file=dataSource)
 smells = list(
-  #list(schema="/media/CodeSmells_2022/analysis/modelling/schemas/schema-functions-v2.json", name="long method", id="longmethod"),
-  list(schema="/media/CodeSmells_2022/analysis/modelling/schemas/schema-functions-v2.json", name="feature envy", id="featureenvy")#, 
-  #list(schema="/media/CodeSmells_2022/analysis/modelling/schemas/schema-classes-v2.json", name="blob", id="blob"),  
-  #list(schema="/media/CodeSmells_2022/analysis/modelling/schemas/schema-classes-v2.json", name="data class", id="dataclass")
+  #list(schema="../../schemas/schema-functions-v2.json", name="long method", id="longmethod"),
+  list(schema="../../schemas/schema-functions-v2.json", name="feature envy", id="featureenvy")#, 
+  #list(schema="../../schemas/schema-classes-v2.json", name="blob", id="blob"),  
+  #list(schema="../../schemas/schema-classes-v2.json", name="data class", id="dataclass")
 )=
 
 
-commonPath <- "/media/CodeSmells_2022/analysis/modelling/R/algorithms"
+commonPath <- "./algorithms"
 models <- list(
     ##list(path="analytic/MDA_MLR.R", name="MDA"),
     ##list(path="knn/KNN.R", name="KNN"),
@@ -100,7 +100,7 @@ for(threshold in thresholds) {
         # from mode value is <= 2% #1%
         data <- mlr::removeConstantFeatures(data, perc = 0.02, dont.rm = "severity", show.info = FALSE)
 
-        smellLoc <- paste("/media/CodeSmells_2022/models/2022-01-16_2", smell$id, threshold_name, sep="/")
+        smellLoc <- paste("../../models/2022-01-16_2", smell$id, threshold_name, sep="/")
         modelRes <- {}
         for(model in models) {
             print(paste("Handling: ", model))
