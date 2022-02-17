@@ -104,7 +104,7 @@ for(threshold in thresholds) {
         # from mode value is <= 2% #1%
         data <- mlr::removeConstantFeatures(data, perc = 0.02, dont.rm = "severity", show.info = FALSE)
 
-        smellLoc <- paste("../../models/2022-01-16_2", smell$id, threshold_name, sep="/")
+        smellLoc <- paste("../../models/2022-02-17", smell$id, threshold_name, sep="/")
         modelRes <- {}
         for(model in models) {
             print(paste("Handling: ", model))
