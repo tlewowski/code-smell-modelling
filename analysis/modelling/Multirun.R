@@ -61,14 +61,14 @@ models <- list(
     list(path="SVM/SVM_libsvm.R", name="libSVM"),
     list(path="trees/RandomForest_MLR.R", name="RandomForest"),
     list(path="trees/ctree.R", name="CTree"),
-    list(path="analytic/FDA.R", name="FDA")#,
+    list(path="analytic/FDA.R", name="FDA"),
     #list(path="evolutionary/evtree.R", name="evtree"),
     list(path="statistical/NaiveBayes.R", name="NaiveBayes")
     #list(path="statistical/GaussianProcesses.R", name="gaussian_processes")
 )
 
 thresholds <- list(
-  #c("minor", "major", "critical"),
+  c("minor", "major", "critical"),
   c("major", "critical")
 )
 
