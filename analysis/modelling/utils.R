@@ -349,7 +349,7 @@ measuremulticlass.AvFbetaCalc <- function(confMatrix, levels) {
 
 
 makeStats <- function(model) {
-  matrix <- calculateConfusionMatrix(model, relative = FALSE, sums = FALSE))
+  matrix <- calculateConfusionMatrix(model, relative = FALSE, sums = FALSE)
 
   if(is.null(matrix)) {
     return(list(

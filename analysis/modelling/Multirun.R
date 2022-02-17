@@ -28,7 +28,11 @@ mlr::configureMlr()
 # names(argsL) <- argsDF$V1
 
 args <- commandArgs(trailingOnly=TRUE)
-smellPattern <- args[1]
+if(is.null(args[1])) {
+  smellPattern <- ""
+} else {
+  smellPattern <- args[1]
+}
 
 print(paste("Running for", smellPattern))
 
@@ -39,27 +43,27 @@ source("./utils.R")
 dataSource <- "../../data/all-with-metrics.csv"
 
 initialData <- read.csv(file=dataSource)
-smells = list(
-  #list(schema="../../schemas/schema-functions-v2.json", name="long method", id="longmethod"),
-  list(schema="../../schemas/schema-functions-v2.json", name="feature envy", id="featureenvy")#, 
-  #list(schema="../../schemas/schema-classes-v2.json", name="blob", id="blob"),  
-  #list(schema="../../schemas/schema-classes-v2.json", name="data class", id="dataclass")
-)=
+smells <- list(
+  list(schema="../../schemas/schema-functions-v2.json", name="long method", id="longmethod"),
+  list(schema="../../schemas/schema-functions-v2.json", name="feature envy", id="featureenvy"), 
+  list(schema="../../schemas/schema-classes-v2.json", name="blob", id="blob"),  
+  list(schema="../../schemas/schema-classes-v2.json", name="data class", id="dataclass")
+)
 
 
 commonPath <- "./algorithms"
 models <- list(
-    ##list(path="analytic/MDA_MLR.R", name="MDA"),
-    ##list(path="knn/KNN.R", name="KNN"),
+    list(path="analytic/MDA_MLR.R", name="MDA"),
+    list(path="knn/KNN.R", name="KNN"),
     #list(path="meta/AdaBoost_MLR.R", name="adaboost"),
     #list(path="neural/NeuralNet.R", name="neural_net"),
-    ##list(path="SVM/SVM_kSVM.R", name="kSVM"),
-    ##list(path="SVM/SVM_libsvm.R", name="libSVM"),
-    ##list(path="trees/RandomForest_MLR.R", name="RandomForest"),
-    ##list(path="trees/ctree.R", name="CTree"),
+    list(path="SVM/SVM_kSVM.R", name="kSVM"),
+    list(path="SVM/SVM_libsvm.R", name="libSVM"),
+    list(path="trees/RandomForest_MLR.R", name="RandomForest"),
+    list(path="trees/ctree.R", name="CTree"),
     list(path="analytic/FDA.R", name="FDA")#,
     #list(path="evolutionary/evtree.R", name="evtree"),
-    ##list(path="statistical/NaiveBayes.R", name="NaiveBayes")
+    list(path="statistical/NaiveBayes.R", name="NaiveBayes")
     #list(path="statistical/GaussianProcesses.R", name="gaussian_processes")
 )
 
@@ -72,10 +76,10 @@ for(threshold in thresholds) {
     threshold_name <- paste(threshold, collapse="_")
 
     for(smell in smells) {
-        #if(!smell$id == smellPattern) {
-        #    print(paste("Not matching", smell$id))
-        #    next
-        #}
+        if(!smell$id == smellPattern) {
+            print(paste("Not matching", smell$id))
+            next
+        }
         json_data <- fromJSON(file=smell$schema)
         inputs <- sapply(json_data$inputVariables, function(var) return(list(key=var$key, type=var$variableType)))
         input_names <- sapply(json_data$inputVariables, function(var) return(var$key))
@@ -132,18 +136,6 @@ for(threshold in thresholds) {
                 print(paste("Failed to prepare", model$name, "skipping results, continuing with the next one"))
                 next
             }
-
-            metadata <- list(
-                timestamp = format(Sys.time()),
-                id = paste(smell$id, model$name, i, sep="/"),
-                libraries = getPackages(),
-                schema = smell$schema,
-                script = model$path,
-                datasets = dataSource,
-                predictors = input_names,
-                outputs = output_names,
-                performance = perf
-            )
 
             totalPerf <- NULL
             modelLoc <- paste(smellLoc, model$name, sep="/")
