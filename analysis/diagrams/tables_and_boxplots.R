@@ -70,8 +70,8 @@ calculateStats <- function(directory) {
 }
 
 
-resultsRoot <- "/media/CodeSmells_2022/models/2022-01-16_2"
-targetRoot <- "/media/CodeSmells_2022/images/2022-01-17"
+resultsRoot <- "../../models/2022-02-17"
+targetRoot <- "../../images/2022-02-17"
 
 smellsToAnalyze <- c(
     "blob" = "Blob", 
