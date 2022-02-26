@@ -240,11 +240,12 @@ cleanDataByTakingCareOfMultipleReviewsOfTheSameSample <-
 
 
 cleanDataByImputingNA <- function(data, smell, createDummyFeatures = FALSE) {
+
   #consider smell-targeted imputing data if needed
   if (smell == "blob" |
       smell == "data class" |
       smell == "long method" | smell == "feature envy") {
-    
+
     if(createDummyFeatures == FALSE) 
       dummyFeatures = character(0L)
     else
@@ -261,6 +262,7 @@ cleanDataByImputingNA <- function(data, smell, createDummyFeatures = FALSE) {
       ),
       dummy.classes = dummyFeatures
     )
+    
     data <- imputeResult$data
   }
   return(data)
@@ -270,17 +272,18 @@ cleanDataByImputingNA <- function(data, smell, createDummyFeatures = FALSE) {
 #-- Function: cleanDataByMLbasedImputingNA ------------------------------------
 cleanDataByMLbasedImputingNA <- function(data, smell, createDummyFeatures = FALSE) {
   #consider smell-targeted imputing data if needed
+
   if (smell == "blob" |
       smell == "data class" |
       smell == "long method" | smell == "feature envy") {
-    
+ 
     if(createDummyFeatures == FALSE) 
       dummyFeatures = character(0L)
     else
       dummyFeatures = c("integer", "numeric", "factor")
     
     imputeResult <- mlr::impute(
-      data,
+      as.data.frame(data),
       target = "severity",
       classes = list(
         integer = mlr::imputeLearner(mlr::makeLearner("regr.rpart")),
@@ -291,23 +294,40 @@ cleanDataByMLbasedImputingNA <- function(data, smell, createDummyFeatures = FALS
        dummy.classes = dummyFeatures
     )
     
-    data <- imputeResult$data
+    data <- as.data.frame(imputeResult$data)
   }
   return(data)
 }
 
 
 
-myMakeLearner <- function(learnerName){
-  learner <- mlr::makeLearner(learnerName)
+#myMakeLearner <- function(learnerName){
+#  learner <- mlr::makeLearner(learnerName)
+#  if("factors" %in% mlr::getLearnerProperties(learnerName)){
+#  } else{
+#
+#    learner <- learner %>% mlr::makeDummyFeaturesWrapper()
+#  }
+#  return(learner)
+#}
+
+myMakeLearner <- function(learnerName, id, par.vals = list(), config = list()){
+  learner <- mlr::makeLearner(learnerName, par.vals = par.vals, config = config)
+  learner <- mlr::setPredictType(learner, "response") #"prob") #"response")
+  if(!missing(id))
+    setLearnerId(learner, id)
   if("factors" %in% mlr::getLearnerProperties(learnerName)){
   } else{
-    
+
     learner <- learner %>% mlr::makeDummyFeaturesWrapper()
+    #remove ".dummied" from learner$id
+    if(endsWith(learner$id, ".dummied")) {
+      newId <- stringr::str_sub(learner$id, start = 1, end = nchar(learner$id) - 8)
+      learner <- setLearnerId(learner, newId)
+    }
   }
   return(learner)
 }
-
 
 #-- New multiclass classification performance metric multiclass.AvFbeta
 #-- suited for imbalanced data sets

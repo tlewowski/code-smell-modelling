@@ -16,13 +16,35 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
 
-
+library('mda')
 
 makeCQLearner <- function() {
-    return(myMakeLearner("classif.mda"))
+    learner <- myMakeLearner("classif.mda", par.vals = list(
+      method = gen.ridge,
+      criterion = "misclassification",
+      start.method = "kmeans"
+    ), config = list(on.par.out.of.bounds = "continue"))
+    return(learner)
 }
 
 buildTunedModel <- function(learner, resampling, measures) {
-    myLearnerTuned = learner
-    return(train(learner, taskPerSmell))
+    paramSpace <- makeParamSet(
+      makeIntegerParam("subclasses", lower=1, upper=5),
+      makeIntegerParam("tries", lower=1, upper=10),
+      makeIntegerParam("dimension", lower=1, upper=10),
+      makeIntegerParam("iter", lower=1, upper=10)
+    )
+
+    searchStrategy <- makeTuneControlRandom(maxit=40L)
+
+    tunedParams <-
+      tuneParams(learner, task = taskPerSmell,
+                 resampling = resampling,
+                 measures = measures,
+                 par.set = paramSpace,
+                 control = searchStrategy
+      )
+
+    myLearnerTuned <- setHyperPars(learner, par.vals = tunedParams$x)
+    return(train(myLearnerTuned, taskPerSmell))
 }

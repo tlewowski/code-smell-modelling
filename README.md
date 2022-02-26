@@ -69,8 +69,8 @@ as no automated script (similar to `libraries.R` or `Packrat.lock`) is provided 
 
 Five variables in the script are mainly used to control its behavior:
 
- - `resultsRoot` - path in the local filesystem where scripts results will be stored
- - `modelsRoot` - path in the local filesystem where built models (and their metadata) are stored. Models should be stored in the same directory structure that is created by `Multirun.R`
+ - `targetRoot` - path in the local filesystem where scripts results will be stored
+ - `resultsRoot` - path in the local filesystem where built models (and their metadata) are stored. Models should be stored in the same directory structure that is created by `Multirun.R`
  - `smellsToAnalyze` - list of smells that will be analyzed and their mapping to "publication name"
  - `datasetsToAnalyze` - list of datasets (threshold levels) that will be analyzed and their mapping to "publication name"
  - `METRIC_NAME_MAPPING` - only metrics present in this mapping are preserved in the output tables and boxplots, visible name is the value of the mapping

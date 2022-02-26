@@ -29,14 +29,19 @@ mlr::configureMlr()
 
 args <- commandArgs(trailingOnly=TRUE)
 if(is.null(args[1])) {
-  smellPattern <- ""
+  iterations <- 20
 } else {
-  smellPattern <- args[1]
+  iterations <- as.numeric(args[1])
 }
 
-print(paste("Running for", smellPattern))
+if(is.null(args[2])) {
+  startIteration <- 0
+} else {
+  startIteration <- as.numeric(args[2])
+}
 
-iterations <- 20
+print(paste("Running for", as.character(iterations), "iterations starting from", as.character(startIteration)))
+
 argv <- list(beta=0.8)
 source("./utils.R")
 
@@ -45,8 +50,8 @@ dataSource <- "../../data/all-with-metrics.csv"
 initialData <- read.csv(file=dataSource)
 smells <- list(
   list(schema="../../schemas/schema-functions-v2.json", name="long method", id="longmethod"),
-  list(schema="../../schemas/schema-functions-v2.json", name="feature envy", id="featureenvy"), 
-  list(schema="../../schemas/schema-classes-v2.json", name="blob", id="blob"),  
+  list(schema="../../schemas/schema-functions-v2.json", name="feature envy", id="featureenvy"),
+  list(schema="../../schemas/schema-classes-v2.json", name="blob", id="blob"),
   list(schema="../../schemas/schema-classes-v2.json", name="data class", id="dataclass")
 )
 
@@ -76,10 +81,6 @@ for(threshold in thresholds) {
     threshold_name <- paste(threshold, collapse="_")
 
     for(smell in smells) {
-        if(!smell$id == smellPattern) {
-            print(paste("Not matching", smell$id))
-            next
-        }
         json_data <- fromJSON(file=smell$schema)
         inputs <- sapply(json_data$inputVariables, function(var) return(list(key=var$key, type=var$variableType)))
         input_names <- sapply(json_data$inputVariables, function(var) return(var$key))
@@ -103,6 +104,7 @@ for(threshold in thresholds) {
         # remove all features where fraction of values differing
         # from mode value is <= 2% #1%
         data <- mlr::removeConstantFeatures(data, perc = 0.02, dont.rm = "severity", show.info = FALSE)
+        # data <- mlr::normalizeFeatures(data, target = "severity")
 
         smellLoc <- paste("../../models/2022-02-17", smell$id, threshold_name, sep="/")
         modelRes <- {}
@@ -117,15 +119,19 @@ for(threshold in thresholds) {
                 next
             }
 
+
+	    print(attr(data, "class"))
             res3 <- try(if("missings" %in% mlr::getLearnerProperties(learner$id)){
-                taskPerSmell <- mlr::makeClassifTask(id = smell$name,
+                taskPerSmell = mlr::makeClassifTask(id = smell$name,
                 data = data,
                 target = "severity",
                 positive = "TRUE"
                 )
             } else{
                 data <- data %>% cleanDataByMLbasedImputingNA(smell$name, createDummyFeatures = FALSE)
-                taskPerSmell <- mlr::makeClassifTask(id = stringr::str_c(smell$name, "NAimputedViaML"),
+	    print(attr(data, "class"))
+                lapply(data, write, "data.txt", append=TRUE, ncolumns=1000)
+                taskPerSmell = mlr::makeClassifTask(id = stringr::str_c(smell$name, "NAimputedViaML"),
                 data = data,
                 target = "severity",
                 positive = "TRUE"
@@ -139,8 +145,9 @@ for(threshold in thresholds) {
 
             totalPerf <- NULL
             modelLoc <- paste(smellLoc, model$name, sep="/")
-            learner <- makeOverBaggingWrapper(learner, obw.rate = 5, obw.iters =3)
-            res <- try(for(i in 1:iterations) {
+            learner <- makeOverBaggingWrapper(learner, obw.rate = 10, obw.iters =10)
+            res <- # try(
+		       for(i in startIteration:(startIteration+iterations-1)) {
                 target = paste(modelLoc, i, "target.model", sep="/")
                 print(paste("Saving model to", target))
                 #-- Performing (preliminary) repeated k-fold cross-validation ----
@@ -171,11 +178,13 @@ for(threshold in thresholds) {
                 saveRDS(tunedModel, file=paste(target, "/model.rds", sep=""))
                 meta <- toJSON(metadata, indent=2)
                 write(meta, file=paste(target, "/metadata.json",sep=""))
-            })
+            }
+	    #)
 
             if(inherits(res, "try-error"))
             {
                 print(paste("Failed to handle", model$name, "skipping results, continuing with the next one"))
+	        traceback()
             } else {
                 totalPerf <- totalPerf / iterations
                 modelRes[[model$name]] <- totalPerf

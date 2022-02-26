@@ -4,6 +4,23 @@ library("tidyverse")
 library("tidyjson")
 library("xtable")
 
+resultsRoot <- "../../models/2022-02-17"
+targetRoot <- "../../images/2022-02-17"
+
+mkdirs(targetRoot)
+
+smellsToAnalyze <- c(
+    "blob" = "Blob", 
+    "dataclass" = "Data Class", 
+    "featureenvy" = "Feature Envy",
+    "longmethod" = "Long Method"
+    )
+
+datasetsToAnalyze <- c(
+    "minor_major_critical" = "DS1",
+    "major_critical" = "DS2"
+)
+
 METRIC_NAME_MAPPING <- c(
     "acc" = "Accuracy", 
     "bac" = "Balanced accuracy",
@@ -63,27 +80,13 @@ calculateStats <- function(directory) {
           q2 = quantile(value, .50, na.rm = TRUE),
           q3 = quantile(value, .75, na.rm = TRUE),
           max = max(value, na.rm = TRUE),
+	  count=length(value)
         ) %>%
         separate(key, c("smell", "algorithm", "metric"), sep="/")
     
     return (list(smellmetrics, smellmetrics_summaries))
 }
 
-
-resultsRoot <- "../../models/2022-02-17"
-targetRoot <- "../../images/2022-02-17"
-
-smellsToAnalyze <- c(
-    "blob" = "Blob", 
-    "dataclass" = "Data Class", 
-    "featureenvy" = "Feature Envy",
-    "longmethod" = "Long Method"
-    )
-
-datasetsToAnalyze <- c(
-    "minor_major_critical" = "DS1",
-    "major_critical" = "DS2"
-)
 
 for(smell in names(smellsToAnalyze)) {
     for(ds in names(datasetsToAnalyze)) {

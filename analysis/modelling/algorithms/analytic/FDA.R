@@ -22,7 +22,7 @@ makeCQLearner <- function() {
 
 buildTunedModel <- function(learner, resampling, measures) {
     paramSpace <- makeParamSet(
-    makeIntegerParam("maxit", lower=40, upper=40),
+    makeIntegerParam("maxit", lower=20, upper=40),
     makeDiscreteParam("newvar.penalty", values=c(0,0.01,0.03,0.05,0.08,0.1)),
     makeDiscreteParam("fast.k", values=c(0,4,8,20,40,100)),
     makeDiscreteParam("fast.beta", values=c(0,1)),
@@ -39,6 +39,6 @@ buildTunedModel <- function(learner, resampling, measures) {
     control = searchStrategy
     )
 
-    myLearnerTuned = setHyperPars(learner, par.vals = tunedParams$x)
+    myLearnerTuned <- setHyperPars(learner, par.vals = tunedParams$x)
     return(train(myLearnerTuned, taskPerSmell))
 }
