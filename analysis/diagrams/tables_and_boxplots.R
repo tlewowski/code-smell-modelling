@@ -4,7 +4,7 @@ library("tidyverse")
 library("tidyjson")
 library("xtable")
 
-resultsRoot <- "../../models/2022-02-17"
+modelsRoot <- "../../models/2022-02-17"
 targetRoot <- "../../images/2022-02-17"
 
 mkdirs(targetRoot)
@@ -90,7 +90,7 @@ calculateStats <- function(directory) {
 
 for(smell in names(smellsToAnalyze)) {
     for(ds in names(datasetsToAnalyze)) {
-        datadir <- paste(resultsRoot, smell, ds, sep="/")
+        datadir <- paste(modelsRoot, smell, ds, sep="/")
         stats_full <- calculateStats(datadir)
         stats_table <- stats_full[[2]] %>% 
           filter(metric %in% names(METRIC_NAME_MAPPING))

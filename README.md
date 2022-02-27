@@ -37,7 +37,7 @@ The script is not very well-separated - it has several locations in which a hard
  - `smells` - list of schemas used for machine learning
  - `commonPath` - root for algorithms that are used as "plugins"
  - `dataSource` - location of base data set
- - `smellLoc` - target location for built models
+ - `modelsRoot` - target location for built models
  - sourced utilities
 
 Additional parameters that may be adjusted are:
@@ -69,8 +69,8 @@ as no automated script (similar to `libraries.R` or `Packrat.lock`) is provided 
 
 Five variables in the script are mainly used to control its behavior:
 
- - `targetRoot` - path in the local filesystem where scripts results will be stored
- - `resultsRoot` - path in the local filesystem where built models (and their metadata) are stored. Models should be stored in the same directory structure that is created by `Multirun.R`
+ - `imagesRoot` - path in the local filesystem where scripts results will be stored
+ - `modelsRoot` - path in the local filesystem where built models (and their metadata) are stored. Models should be stored in the same directory structure that is created by `Multirun.R`
  - `smellsToAnalyze` - list of smells that will be analyzed and their mapping to "publication name"
  - `datasetsToAnalyze` - list of datasets (threshold levels) that will be analyzed and their mapping to "publication name"
  - `METRIC_NAME_MAPPING` - only metrics present in this mapping are preserved in the output tables and boxplots, visible name is the value of the mapping

@@ -45,7 +45,9 @@ print(paste("Running for", as.character(iterations), "iterations starting from",
 argv <- list(beta=0.8)
 source("./utils.R")
 
-dataSource <- "../../data/all-with-metrics.csv"
+dataSource <- "../../data/mlcq-with-metrics.csv"
+modelsRoot <- "../../models/2022-02-27"
+mkdirs(modelsRoot)
 
 initialData <- read.csv(file=dataSource)
 smells <- list(
@@ -81,6 +83,7 @@ for(threshold in thresholds) {
     threshold_name <- paste(threshold, collapse="_")
 
     for(smell in smells) {
+        smellLoc <- paste(modelsRoot, smell$id, threshold_name, sep="/")
         json_data <- fromJSON(file=smell$schema)
         inputs <- sapply(json_data$inputVariables, function(var) return(list(key=var$key, type=var$variableType)))
         input_names <- sapply(json_data$inputVariables, function(var) return(var$key))
@@ -106,8 +109,7 @@ for(threshold in thresholds) {
         data <- mlr::removeConstantFeatures(data, perc = 0.02, dont.rm = "severity", show.info = FALSE)
         # data <- mlr::normalizeFeatures(data, target = "severity")
 
-        smellLoc <- paste("../../models/2022-02-17", smell$id, threshold_name, sep="/")
-        modelRes <- {}
+       modelRes <- {}
         for(model in models) {
             print(paste("Handling: ", model))
             source(paste(commonPath, model$path, sep="/"))
@@ -130,7 +132,6 @@ for(threshold in thresholds) {
             } else{
                 data <- data %>% cleanDataByMLbasedImputingNA(smell$name, createDummyFeatures = FALSE)
 	    print(attr(data, "class"))
-                lapply(data, write, "data.txt", append=TRUE, ncolumns=1000)
                 taskPerSmell = mlr::makeClassifTask(id = stringr::str_c(smell$name, "NAimputedViaML"),
                 data = data,
                 target = "severity",
