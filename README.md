@@ -1,5 +1,8 @@
 # Code smell modelling
 
+If you use this repository in your research, please cite the article available here: https://doi.org/10.1016/j.infsof.2022.107112
+
+
 ## Features
 
 This repository provides two main functionalities:
