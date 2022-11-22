@@ -3,9 +3,10 @@ library("purrr")
 library("tidyverse")
 library("tidyjson")
 library("xtable")
+library("R.utils")
 
-modelsRoot <- "../../models/2022-02-17"
-targetRoot <- "../../images/2022-02-17"
+modelsRoot <- "../../models/2022-02-27"
+targetRoot <- "../../images/2022-02-27"
 
 mkdirs(targetRoot)
 
@@ -103,7 +104,10 @@ for(smell in names(smellsToAnalyze)) {
             tab, 
             type = "latex",
             file = paste(targetRoot, paste(paste("stats", "table", smell, ds, sep="_"), "tex", sep="."), sep="/")
-        )        
+        )
+
+	write.csv(stats_full[[1]], paste(targetRoot, paste(paste("full-results",smell, ds, sep="_"), "csv", sep="."), sep="/"))
+	write.csv(stats_full[[2]], paste(targetRoot, paste(paste("summaries",smell, ds, sep="_"), "csv", sep="."), sep="/"))
         
         stats_boxplot <- stats_full[[1]] %>% 
           filter(metric %in% names(METRIC_NAME_MAPPING))

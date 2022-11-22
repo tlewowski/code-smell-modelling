@@ -25,6 +25,7 @@ library(ModelMetrics)
 library(dplyr)
 library(mlr)
 mlr::configureMlr()
+library(stringr)
 # names(argsL) <- argsDF$V1
 
 args <- commandArgs(trailingOnly=TRUE)
@@ -40,49 +41,53 @@ if(is.null(args[2])) {
   startIteration <- as.numeric(args[2])
 }
 
-print(paste("Running for", as.character(iterations), "iterations starting from", as.character(startIteration)))
+print(paste("Running reproduction for", as.character(iterations), "iterations starting from", as.character(startIteration)))
 
 argv <- list(beta=0.8)
-source("./utils.R")
+source("./utils-repro.R")
 
 dataSource <- "../../data/mlcq-with-metrics.csv"
-modelsRoot <- "../../models/2022-02-27"
+modelsRoot <- "../../models/2022-04-01-repro-prec"
 mkdirs(modelsRoot)
 
 initialData <- read.csv(file=dataSource)
 smells <- list(
 #  list(schema="../../schemas/schema-functions-v2.json", name="long method", id="longmethod"),
-  list(schema="../../schemas/schema-functions-v2.json", name="feature envy", id="featureenvy")#,
-#  list(schema="../../schemas/schema-classes-v2.json", name="blob", id="blob"),
-#  list(schema="../../schemas/schema-classes-v2.json", name="data class", id="dataclass")
+#  list(schema="../../schemas/schema-functions-v2.json", name="feature envy", id="featureenvy")#,
+  list(schema="../../schemas/schema-classes-v2.json", name="blob", id="blob"),
+  list(schema="../../schemas/schema-classes-v2.json", name="data class", id="dataclass")
 )
 
 commonPath <- "./algorithms"
 models <- list(
-    list(path="analytic/MDA_MLR.R", name="MDA"),
-    list(path="knn/KNN.R", name="KNN"),
+    #list(path="analytic/MDA_MLR.R", name="MDA"),
+    #list(path="knn/KNN.R", name="KNN"),
     #list(path="meta/AdaBoost_MLR.R", name="adaboost"),
     #list(path="neural/NeuralNet.R", name="neural_net"),
-    list(path="SVM/SVM_kSVM.R", name="kSVM"),
+    #list(path="SVM/SVM_kSVM.R", name="kSVM"),
     #list(path="SVM/SVM_libsvm.R", name="libSVM"),
-    list(path="trees/RandomForest_MLR.R", name="RandomForest"),
-    list(path="trees/ctree.R", name="CTree"),
-    list(path="analytic/FDA.R", name="FDA"),
+    list(path="trees/RandomForest_MLR-repro.R", name="RandomForest")#,
+    #list(path="trees/ctree.R", name="CTree"),
+    #list(path="analytic/FDA.R", name="FDA"),
     #list(path="evolutionary/evtree.R", name="evtree"),
-    list(path="statistical/NaiveBayes.R", name="NaiveBayes")
+    #list(path="statistical/NaiveBayes.R", name="NaiveBayes")
     #list(path="statistical/GaussianProcesses.R", name="gaussian_processes")
 )
 
-thresholds <- list(
+#thresholds <- list(
 #  c("minor", "major", "critical"),
-  c("major", "critical")
-)
+#  c("major", "critical")
+#)
+
+thresholds <- c(0.25, 0.5, 0.75, 1.0, 1.25, 1.50, 1.75, 2.0, 2.25, 2.50)
 
 for(threshold in thresholds) {
-    threshold_name <- paste(threshold, collapse="_")
-
+    threshold_name <- str_replace(toString(threshold), "\\.", "_")
+    print(paste("Running reproduction on ", threshold_name))
+ 
     for(smell in smells) {
         smellLoc <- paste(modelsRoot, smell$id, threshold_name, sep="/")
+        mkdirs(smellLoc)
         json_data <- fromJSON(file=smell$schema)
         inputs <- sapply(json_data$inputVariables, function(var) return(list(key=var$key, type=var$variableType)))
         input_names <- sapply(json_data$inputVariables, function(var) return(var$key))
@@ -93,22 +98,29 @@ for(threshold in thresholds) {
         output_selector <- paste(output_names, collapse=" + ")
 
         column_selector <- as.formula(paste(output_selector," ~ ",input_selector))
-        myMeasures = list( mcc )# new performance metric defined in the R4PerformanceMetricV2.1.pdf report by Madeyski
+        myMeasures = list( ppv )# new performance metric defined in the R4PerformanceMetricV2.1.pdf report by Madeyski
         myCV <- cv5stratify # for more precise results change into repeated CV (e.g., rep20cv10stratify)
 
+	print("Data cleanup - type conversion")
         data <- initialData %>% cleanDataByConvertingToCorrectTypes()
+
+	print("Data cleanup - averaging")
         data <- data %>% cleanDataByTakingCareOfMultipleReviewsOfTheSameSample()
-        data <- data %>% cleanDataByRemovingIrrelevantData(smell$name)
 
         # Threshold for smelly class
+	print("Data cleanup - thresholding")
         data <- data %>% cleanDataByThresholdingSeverity(threshold)
 
-        # remove all features where fraction of values differing
+        print("Data cleanup - removal of irrelevant stuff")
+        data <- data %>% cleanDataByRemovingIrrelevantData(smell$name)
+
+	# remove all features where fraction of values differing
         # from mode value is <= 2% #1%
+	print("Data cleanup - removal of constant features")
         data <- mlr::removeConstantFeatures(data, perc = 0.02, dont.rm = "severity", show.info = FALSE)
         # data <- mlr::normalizeFeatures(data, target = "severity")
 
-       modelRes <- {}
+        modelRes <- {}
         for(model in models) {
             print(paste("Handling: ", model))
             source(paste(commonPath, model$path, sep="/"))
@@ -120,7 +132,6 @@ for(threshold in thresholds) {
                 next
             }
 
-
             res3 <- try(if("missings" %in% mlr::getLearnerProperties(learner$id)){
                 taskPerSmell = mlr::makeClassifTask(id = smell$name,
                 data = data,
@@ -129,7 +140,6 @@ for(threshold in thresholds) {
                 )
             } else{
                 data <- data %>% cleanDataByMLbasedImputingNA(smell$name, createDummyFeatures = FALSE)
-    	        print(data)
                 taskPerSmell = mlr::makeClassifTask(id = stringr::str_c(smell$name, "NAimputedViaML"),
                 data = data,
                 target = "severity",
@@ -144,6 +154,7 @@ for(threshold in thresholds) {
 
             totalPerf <- NULL
             modelLoc <- paste(smellLoc, model$name, sep="/")
+	    mkdirs(modelLoc)
             learner <- makeOverBaggingWrapper(learner, obw.rate = 10, obw.iters =10)
             res <- # try(
 		       for(i in startIteration:(startIteration+iterations-1)) {
